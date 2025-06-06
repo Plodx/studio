@@ -1,7 +1,6 @@
 'use client';
 
-import { useFormState } from 'react-dom';
-import { useEffect, useRef } from 'react';
+import { useActionState, useEffect, useRef } from 'react';
 import type { ActionResult } from '@/app/actions';
 import { generateTeamsAction } from '@/app/actions';
 import { Input } from '@/components/ui/input';
@@ -22,7 +21,7 @@ const initialState: ActionResult = {
 };
 
 export default function HomePage() {
-  const [state, formAction] = useFormState(generateTeamsAction, initialState);
+  const [state, formAction] = useActionState(generateTeamsAction, initialState);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -31,10 +30,9 @@ export default function HomePage() {
       toast({
         title: "Success!",
         description: "Teams generated successfully.",
-        variant: "default", // This will use primary color from theme
+        variant: "default", 
       });
     } else if (!state.success && state.error) {
-      // Field errors are displayed inline, general errors are toasted
       if (!state.fieldErrors || Object.keys(state.fieldErrors).length === 0) {
          toast({
           title: "Error",
