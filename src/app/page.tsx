@@ -10,10 +10,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { GeneratedTeamCard } from '@/components/generated-team-card';
 import { SubmitButton } from '@/components/submit-button';
 import { useToast } from "@/hooks/use-toast";
-import { AlertCircle, Info } from 'lucide-react';
+import { AlertCircle, Info, Cog, Edit3 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { strongTeamsList as defaultStrongTeamsList, weakTeamsList as defaultWeakTeamsList } from '@/lib/team-data';
 import { EditableTeamList } from '@/components/editable-team-list';
+import { Button } from '@/components/ui/button';
 
 const initialState: ActionResult = {
   success: false,
@@ -29,6 +30,7 @@ export default function HomePage() {
 
   const [currentStrongTeams, setCurrentStrongTeams] = useState<string[]>(defaultStrongTeamsList);
   const [currentWeakTeams, setCurrentWeakTeams] = useState<string[]>(defaultWeakTeamsList);
+  const [showTeamEditors, setShowTeamEditors] = useState(false);
 
   useEffect(() => {
     if (state.success && state.data) {
@@ -55,40 +57,55 @@ export default function HomePage() {
 
   return (
     <main className="container mx-auto px-4 py-8 flex flex-col items-center min-h-screen bg-background">
-      <header className="mb-10 text-center">
-        <h1 className="text-5xl font-extrabold tracking-tight text-primary">
-          Equipo<span style={{ color: 'hsl(var(--accent))' }}>Randomizer</span>
-        </h1>
-        <p className="mt-2 text-lg text-muted-foreground">
-          Generate random pairs of 2 strong and 2 weak teams without repetition.
-        </p>
+      <header className="mb-10 text-center w-full max-w-4xl">
+        <div className="flex justify-between items-center">
+          <div className="flex-1 text-center">
+            <h1 className="text-5xl font-extrabold tracking-tight text-primary">
+              Equipo<span style={{ color: 'hsl(var(--accent))' }}>Randomizer</span>
+            </h1>
+            <p className="mt-2 text-lg text-muted-foreground">
+              Generate random pairs of 2 strong and 2 weak teams without repetition.
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setShowTeamEditors(!showTeamEditors)}
+            aria-label={showTeamEditors ? "Hide team editors" : "Show team editors"}
+            className="ml-4"
+          >
+            <Cog className="h-6 w-6 text-primary" />
+          </Button>
+        </div>
       </header>
 
       <div className="w-full max-w-4xl space-y-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <EditableTeamList
-            listId="strongTeams"
-            title="Strong Teams Editor"
-            description="Add or remove teams from the strong pool."
-            teams={currentStrongTeams}
-            onTeamsChange={setCurrentStrongTeams}
-            inputLabel="New Strong Team Name"
-            addButtonLabel="Add Strong Team"
-            nounSingular="strong team"
-            nounPlural="strong teams"
-          />
-          <EditableTeamList
-            listId="weakTeams"
-            title="Weak Teams Editor"
-            description="Add or remove teams from the weak pool."
-            teams={currentWeakTeams}
-            onTeamsChange={setCurrentWeakTeams}
-            inputLabel="New Weak Team Name"
-            addButtonLabel="Add Weak Team"
-            nounSingular="weak team"
-            nounPlural="weak teams"
-          />
-        </div>
+        {showTeamEditors && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+            <EditableTeamList
+              listId="strongTeams"
+              title="Strong Teams Editor"
+              description="Add or remove teams from the strong pool."
+              teams={currentStrongTeams}
+              onTeamsChange={setCurrentStrongTeams}
+              inputLabel="New Strong Team Name"
+              addButtonLabel="Add Strong Team"
+              nounSingular="strong team"
+              nounPlural="strong teams"
+            />
+            <EditableTeamList
+              listId="weakTeams"
+              title="Weak Teams Editor"
+              description="Add or remove teams from the weak pool."
+              teams={currentWeakTeams}
+              onTeamsChange={setCurrentWeakTeams}
+              inputLabel="New Weak Team Name"
+              addButtonLabel="Add Weak Team"
+              nounSingular="weak team"
+              nounPlural="weak teams"
+            />
+          </div>
+        )}
 
         <Card className="w-full shadow-2xl border-2 border-primary/20 bg-card rounded-xl">
           <CardHeader>
@@ -164,7 +181,7 @@ export default function HomePage() {
               <Info className="h-5 w-5 text-primary" />
               <AlertTitle className="text-primary">Ready to Generate!</AlertTitle>
               <AlertDescription className="text-muted-foreground">
-                  Edit the team lists above if needed. Then, enter the number of groups and click "Generate Teams".
+                  Click the <Cog className="inline h-4 w-4" /> icon to edit team lists if needed. Then, enter the number of groups and click "Generate Teams".
               </AlertDescription>
            </Alert>
         )}
