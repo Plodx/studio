@@ -29,6 +29,7 @@ export type GeneratedSet = GeneratedGroup[];
 
 const TeamSubmissionSchema = z.object({
   groupNames: z.string().min(1, { message: 'Group names cannot be empty.' }),
+  numberOfSets: z.string().transform(Number).pipe(z.number().int().min(1, { message: 'Number of sets must be at least 1.' })),
   strongTeamsJSON: z.string().refine(
     (val) => {
       try {
@@ -57,7 +58,7 @@ export interface ActionResult {
   success: boolean;
   data?: GeneratedSet;
   error?: string | null;
-  fieldErrors?: Partial<Record<'groupNames' | 'strongTeamsJSON' | 'weakTeamsJSON', string[]>>;
+  fieldErrors?: Partial<Record<'groupNames' | 'strongTeamsJSON' | 'weakTeamsJSON' | 'numberOfSets', string[]>>;
 }
 
 
@@ -68,6 +69,7 @@ export async function generateTeamsAction(
 
   const rawInput = {
     groupNames: formData.get('groupNames'),
+    numberOfSets: formData.get('numberOfSets'),
     strongTeamsJSON: formData.get('strongTeamsJSON'),
     weakTeamsJSON: formData.get('weakTeamsJSON'),
   };
@@ -82,12 +84,14 @@ export async function generateTeamsAction(
     };
   }
 
+  let { groupNames: groupNamesStr, numberOfSets, strongTeamsJSON, weakTeamsJSON } = parsed.data;
+
   let strongTeams: string[];
   let weakTeams: string[];
 
   try {
-    strongTeams = JSON.parse(parsed.data.strongTeamsJSON);
-    weakTeams = JSON.parse(parsed.data.weakTeamsJSON);
+    strongTeams = JSON.parse(strongTeamsJSON);
+    weakTeams = JSON.parse(weakTeamsJSON);
   } catch (e) {
     return {
         success: false,
@@ -95,7 +99,7 @@ export async function generateTeamsAction(
     };
   }
   
-  const groupNames = parsed.data.groupNames
+  const groupNames = groupNamesStr
     .split(',')
     .map(name => name.trim())
     .filter(name => name.length > 0);
@@ -110,9 +114,6 @@ export async function generateTeamsAction(
     };
   }
 
-  const numberOfGroups = groupNames.length;
-
-
   if (strongTeams.length < 2 || weakTeams.length < 2) {
     return {
       success: false,
@@ -123,25 +124,29 @@ export async function generateTeamsAction(
       }
     };
   }
-  
-  const maxPossibleGroups = Math.min(Math.floor(strongTeams.length / 2), Math.floor(weakTeams.length / 2));
 
-  if (numberOfGroups > maxPossibleGroups) {
+  const numberOfGroupsPerSet = groupNames.length;
+  const totalGroupsToGenerate = numberOfGroupsPerSet * numberOfSets;
+  const maxPossibleTotalGroups = Math.min(Math.floor(strongTeams.length / 2), Math.floor(weakTeams.length / 2));
+
+  if (totalGroupsToGenerate > maxPossibleTotalGroups) {
     return {
       success: false,
-      error: `Cannot generate more than ${maxPossibleGroups} ${maxPossibleGroups === 1 ? "group" : "groups"} with the provided teams.`,
+      error: `You are trying to generate ${totalGroupsToGenerate} groups, but you only have enough teams for ${maxPossibleTotalGroups}.`,
       fieldErrors: {
-        groupNames: [`You requested ${numberOfGroups} groups, but can only form a maximum of ${maxPossibleGroups} with the current team lists.`]
+        groupNames: [`Reduce the number of groups or sets.`],
+        numberOfSets: [`Reduce the number of groups or sets.`]
       }
     };
   }
+
 
   try {
     let availableStrongTeams = shuffleArray([...strongTeams]);
     let availableWeakTeams = shuffleArray([...weakTeams]);
 
     const generatedSet: GeneratedSet = [];
-    for (let i = 0; i < numberOfGroups; i++) {
+    for (let i = 0; i < totalGroupsToGenerate; i++) {
       const groupStrongTeams: Team[] = [];
       const groupWeakTeams: Team[] = [];
 
@@ -155,9 +160,14 @@ export async function generateTeamsAction(
         groupWeakTeams.push({ name: teamName!, type: 'weak' });
       }
 
+      const setNumber = Math.floor(i / numberOfGroupsPerSet) + 1;
+      const baseGroupName = groupNames[i % numberOfGroupsPerSet];
+      const finalGroupName = numberOfSets > 1 ? `${baseGroupName} (Set ${setNumber})` : baseGroupName;
+
+
       generatedSet.push({
         id: `group-${i + 1}-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-        name: groupNames[i],
+        name: finalGroupName,
         strongTeams: groupStrongTeams,
         weakTeams: groupWeakTeams,
       });

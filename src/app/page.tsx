@@ -50,7 +50,7 @@ export default function HomePage() {
     }
   }, [state, toast]);
 
-  const maxPossibleGroups = Math.max(0, Math.min(
+  const maxTotalGroups = Math.max(0, Math.min(
     Math.floor(currentStrongTeams.length / 2),
     Math.floor(currentWeakTeams.length / 2)
   ));
@@ -111,9 +111,9 @@ export default function HomePage() {
           <CardHeader>
             <CardTitle className="text-2xl text-card-foreground">Team Generation Setup</CardTitle>
             <CardDescription className="text-muted-foreground">
-              Enter group names, separated by commas. The number of names will determine the number of groups.
+              Enter group names, separated by commas, and the number of sets to generate.
               {(currentStrongTeams.length >=2 && currentWeakTeams.length >=2) ?
-                ` Max ${maxPossibleGroups} ${maxPossibleGroups === 1 ? "group" : "groups"} based on current lists.`
+                ` Max ${maxTotalGroups} total ${maxTotalGroups === 1 ? "group" : "groups"} can be generated with current lists.`
                 : " (Add at least 2 strong and 2 weak teams to enable generation)"
               }
             </CardDescription>
@@ -122,27 +122,52 @@ export default function HomePage() {
             <form action={formAction} ref={formRef} className="space-y-6">
               <input type="hidden" name="strongTeamsJSON" value={JSON.stringify(currentStrongTeams)} />
               <input type="hidden" name="weakTeamsJSON" value={JSON.stringify(currentWeakTeams)} />
-              <div className="space-y-2">
-                <Label htmlFor="groupNames" className="text-base font-medium text-card-foreground">
-                  Group Names
-                </Label>
-                <Input
-                  id="groupNames"
-                  name="groupNames"
-                  type="text"
-                  placeholder="e.g., Group A, Group B, Final"
-                  defaultValue="A, B, C, D"
-                  required
-                  className="text-base bg-input text-foreground placeholder:text-muted-foreground focus:ring-accent"
-                  aria-describedby="groupNamesError"
-                  disabled={currentStrongTeams.length < 2 || currentWeakTeams.length < 2}
-                />
-                {state.fieldErrors?.groupNames && (
-                  <p id="groupNamesError" className="text-sm text-destructive mt-1">
-                    {state.fieldErrors.groupNames.join(', ')}
-                  </p>
-                )}
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-2 md:col-span-2">
+                    <Label htmlFor="groupNames" className="text-base font-medium text-card-foreground">
+                      Group Names
+                    </Label>
+                    <Input
+                      id="groupNames"
+                      name="groupNames"
+                      type="text"
+                      placeholder="e.g., Group A, Group B"
+                      defaultValue="A, B, C, D"
+                      required
+                      className="text-base bg-input text-foreground placeholder:text-muted-foreground focus:ring-accent"
+                      aria-describedby="groupNamesError"
+                      disabled={currentStrongTeams.length < 2 || currentWeakTeams.length < 2}
+                    />
+                    {state.fieldErrors?.groupNames && (
+                      <p id="groupNamesError" className="text-sm text-destructive mt-1">
+                        {state.fieldErrors.groupNames.join(', ')}
+                      </p>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="numberOfSets" className="text-base font-medium text-card-foreground">
+                      Number of Sets
+                    </Label>
+                    <Input
+                      id="numberOfSets"
+                      name="numberOfSets"
+                      type="number"
+                      min="1"
+                      defaultValue="1"
+                      required
+                      className="text-base bg-input text-foreground placeholder:text-muted-foreground focus:ring-accent"
+                      aria-describedby="numberOfSetsError"
+                      disabled={currentStrongTeams.length < 2 || currentWeakTeams.length < 2}
+                    />
+                    {state.fieldErrors?.numberOfSets && (
+                      <p id="numberOfSetsError" className="text-sm text-destructive mt-1">
+                        {state.fieldErrors.numberOfSets.join(', ')}
+                      </p>
+                    )}
+                  </div>
               </div>
+
               <SubmitButton disabled={currentStrongTeams.length < 2 || currentWeakTeams.length < 2}>
                 Generate Teams
               </SubmitButton>
