@@ -31,9 +31,9 @@ const TeamSubmissionSchema = z.object({
   groupNames: z.string().min(1, { message: 'Group names cannot be empty.' }),
   numberOfSets: z.string().transform(Number).pipe(z.number().int().min(1, { message: 'Number of sets must be at least 1.' })),
   generationMode: z.enum(['balanced', 'random'], { required_error: 'Generation mode is required.'}),
-  strongTeamsJSON: z.string().optional(),
-  weakTeamsJSON: z.string().optional(),
-  allTeamsJSON: z.string().optional(),
+  strongTeamsJSON: z.string().nullish(),
+  weakTeamsJSON: z.string().nullish(),
+  allTeamsJSON: z.string().nullish(),
 }).superRefine((data, ctx) => {
     if (data.generationMode === 'balanced') {
         if (!data.strongTeamsJSON || data.strongTeamsJSON === '[]') {
