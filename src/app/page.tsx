@@ -1,8 +1,8 @@
 
 'use client';
 
-import { useActionState, useEffect, useRef, useState } from 'react';
-import type { ActionResult } from '@/app/actions';
+import { useActionState, useEffect, useMemo, useRef, useState } from 'react';
+import type { ActionResult, GeneratedGroup } from '@/app/actions';
 import { generateTeamsAction } from '@/app/actions';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -55,6 +55,22 @@ export default function HomePage() {
       }
     }
   }, [state, toast]);
+
+  const groupedData = useMemo(() => {
+    const grouped: Record<string, GeneratedGroup[]> = {};
+    if (!state.success || !state.data) return grouped;
+
+    for (const group of state.data) {
+        const match = group.name.match(/\(Set (\d+)\)$/);
+        const setName = match ? `Set ${match[1]}` : "Set 1";
+
+        if (!grouped[setName]) {
+            grouped[setName] = [];
+        }
+        grouped[setName].push(group);
+    }
+    return grouped;
+  }, [state.data, state.success]);
 
   const maxTotalGroups = Math.max(0, 
     generationMode === 'balanced' 
@@ -254,13 +270,26 @@ export default function HomePage() {
               Generated Teams
             </h2>
             <Accordion type="multiple" className="w-full space-y-4">
-              {state.data.map((group) => (
-                <AccordionItem key={group.id} value={group.id} className="bg-card border border-border rounded-lg shadow-lg">
+              {Object.entries(groupedData).map(([setName, groupsInSet]) => (
+                <AccordionItem key={setName} value={setName} className="bg-card border border-border rounded-lg shadow-lg">
                   <AccordionTrigger className="w-full text-2xl font-bold text-center text-primary p-6 hover:no-underline">
-                      {group.name}
+                      {setName}
                   </AccordionTrigger>
                   <AccordionContent className="p-6 pt-0">
-                    <GeneratedTeamCard group={group} />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {groupsInSet.map((group) => (
+                        <Card key={group.id}>
+                          <CardHeader>
+                            <CardTitle className="text-xl text-center">
+                              {group.name.replace(/ \(Set \d+\)$/, '')}
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <GeneratedTeamCard group={group} />
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
                   </AccordionContent>
                 </AccordionItem>
               ))}
