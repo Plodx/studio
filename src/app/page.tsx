@@ -214,7 +214,7 @@ export default function HomePage() {
                       name="groupNames"
                       type="text"
                       placeholder="e.g., Group A, Group B"
-                      defaultValue="A, B, C, D"
+                      defaultValue='Alan "The Legend" Sanchez, Sebastian "Cepita" Nodari, Agustin "El Pato" Rodiguez'
                       required
                       className="text-base bg-input text-foreground placeholder:text-muted-foreground focus:ring-accent"
                       aria-describedby="groupNamesError"
