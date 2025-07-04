@@ -10,11 +10,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { GeneratedTeamCard } from '@/components/generated-team-card';
 import { SubmitButton } from '@/components/submit-button';
 import { useToast } from "@/hooks/use-toast";
-import { AlertCircle, Info, Cog } from 'lucide-react';
+import { AlertCircle, Info, Cog, SlidersHorizontal } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { strongTeamsList as defaultStrongTeamsList, weakTeamsList as defaultWeakTeamsList } from '@/lib/team-data';
 import { EditableTeamList } from '@/components/editable-team-list';
 import { Button } from '@/components/ui/button';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Separator } from '@/components/ui/separator';
 
 const initialState: ActionResult = {
   success: false,
@@ -28,8 +30,11 @@ export default function HomePage() {
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
 
+  const [generationMode, setGenerationMode] = useState<'balanced' | 'random'>('balanced');
+  
   const [currentStrongTeams, setCurrentStrongTeams] = useState<string[]>(defaultStrongTeamsList);
   const [currentWeakTeams, setCurrentWeakTeams] = useState<string[]>(defaultWeakTeamsList);
+  const [allTeams, setAllTeams] = useState<string[]>([...new Set([...defaultStrongTeamsList, ...defaultWeakTeamsList])]);
   const [showTeamEditors, setShowTeamEditors] = useState(false);
 
   useEffect(() => {
@@ -50,10 +55,16 @@ export default function HomePage() {
     }
   }, [state, toast]);
 
-  const maxTotalGroups = Math.max(0, Math.min(
-    Math.floor(currentStrongTeams.length / 2),
-    Math.floor(currentWeakTeams.length / 2)
-  ));
+  const maxTotalGroups = Math.max(0, 
+    generationMode === 'balanced' 
+      ? Math.min(Math.floor(currentStrongTeams.length / 2), Math.floor(currentWeakTeams.length / 2))
+      : Math.floor(allTeams.length / 4)
+  );
+  
+  const canGenerate = generationMode === 'balanced'
+    ? currentStrongTeams.length >= 2 && currentWeakTeams.length >= 2
+    : allTeams.length >= 4;
+
 
   return (
     <main className="container mx-auto px-4 py-8 flex flex-col items-center min-h-screen bg-background">
@@ -64,7 +75,7 @@ export default function HomePage() {
               Equipo<span style={{ color: 'hsl(var(--accent))' }}>Randomizer</span>
             </h1>
             <p className="mt-2 text-lg text-muted-foreground">
-              Generate random pairs of 2 strong and 2 weak teams without repetition.
+              Generate balanced or fully random teams for your tournament.
             </p>
           </div>
           <Button
@@ -81,47 +92,100 @@ export default function HomePage() {
 
       <div className="w-full max-w-4xl space-y-10">
         {showTeamEditors && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
-            <EditableTeamList
-              listId="strongTeams"
-              title="Strong Teams Editor"
-              description="Add or remove teams from the strong pool."
-              teams={currentStrongTeams}
-              onTeamsChange={setCurrentStrongTeams}
-              inputLabel="New Strong Team Name"
-              addButtonLabel="Add Strong Team"
-              nounSingular="strong team"
-              nounPlural="strong teams"
-            />
-            <EditableTeamList
-              listId="weakTeams"
-              title="Weak Teams Editor"
-              description="Add or remove teams from the weak pool."
-              teams={currentWeakTeams}
-              onTeamsChange={setCurrentWeakTeams}
-              inputLabel="New Weak Team Name"
-              addButtonLabel="Add Weak Team"
-              nounSingular="weak team"
-              nounPlural="weak teams"
-            />
-          </div>
+           <Card className="w-full shadow-lg border-border/30 rounded-lg">
+             <CardHeader>
+               <CardTitle className="text-xl text-card-foreground">Team Editors</CardTitle>
+               <CardDescription className="text-muted-foreground">Manage the team pools for generation.</CardDescription>
+             </CardHeader>
+             <CardContent className="space-y-6">
+                {generationMode === 'balanced' ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <EditableTeamList
+                      listId="strongTeams"
+                      title="Strong Teams Editor"
+                      teams={currentStrongTeams}
+                      onTeamsChange={setCurrentStrongTeams}
+                      inputLabel="New Strong Team"
+                      addButtonLabel="Add Strong Team"
+                      nounSingular="strong team"
+                      nounPlural="strong teams"
+                    />
+                    <EditableTeamList
+                      listId="weakTeams"
+                      title="Weak Teams Editor"
+                      teams={currentWeakTeams}
+                      onTeamsChange={setCurrentWeakTeams}
+                      inputLabel="New Weak Team"
+                      addButtonLabel="Add Weak Team"
+                      nounSingular="weak team"
+                      nounPlural="weak teams"
+                    />
+                  </div>
+                ) : (
+                  <div>
+                    <EditableTeamList
+                      listId="allTeams"
+                      title="All Teams Editor"
+                      teams={allTeams}
+                      onTeamsChange={setAllTeams}
+                      inputLabel="New Team Name"
+                      addButtonLabel="Add Team"
+                      nounSingular="team"
+                      nounPlural="teams"
+                    />
+                  </div>
+                )}
+             </CardContent>
+           </Card>
         )}
 
         <Card className="w-full shadow-2xl border-2 border-primary/20 bg-card rounded-xl">
           <CardHeader>
-            <CardTitle className="text-2xl text-card-foreground">Team Generation Setup</CardTitle>
+            <CardTitle className="text-2xl text-card-foreground flex items-center gap-2">
+              <SlidersHorizontal className="h-6 w-6" />
+              Generation Setup
+            </CardTitle>
             <CardDescription className="text-muted-foreground">
-              Enter group names, separated by commas, and the number of sets to generate.
-              {(currentStrongTeams.length >=2 && currentWeakTeams.length >=2) ?
-                ` Max ${maxTotalGroups} total ${maxTotalGroups === 1 ? "group" : "groups"} can be generated with current lists.`
-                : " (Add at least 2 strong and 2 weak teams to enable generation)"
+              Choose a mode, define your groups, and set the number of sets.
+              {canGenerate ?
+                ` Max ${maxTotalGroups} total ${maxTotalGroups === 1 ? "group" : "groups"} can be generated.`
+                : " (Check team lists in the editor to enable generation)"
               }
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form action={formAction} ref={formRef} className="space-y-6">
-              <input type="hidden" name="strongTeamsJSON" value={JSON.stringify(currentStrongTeams)} />
-              <input type="hidden" name="weakTeamsJSON" value={JSON.stringify(currentWeakTeams)} />
+              {generationMode === 'balanced' ? (
+                <>
+                  <input type="hidden" name="strongTeamsJSON" value={JSON.stringify(currentStrongTeams)} />
+                  <input type="hidden" name="weakTeamsJSON" value={JSON.stringify(currentWeakTeams)} />
+                </>
+              ) : (
+                <input type="hidden" name="allTeamsJSON" value={JSON.stringify(allTeams)} />
+              )}
+               <input type="hidden" name="generationMode" value={generationMode} />
+
+              <div className="space-y-2">
+                <Label className="text-base font-medium text-card-foreground">Generation Mode</Label>
+                 <RadioGroup
+                    value={generationMode}
+                    onValueChange={(value: 'balanced' | 'random') => setGenerationMode(value)}
+                    className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1"
+                  >
+                    <Label htmlFor="mode-balanced" className="flex flex-col items-start gap-3 rounded-md border-2 p-4 hover:border-primary/80 cursor-pointer has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
+                      <RadioGroupItem value="balanced" id="mode-balanced" />
+                      <div className="font-bold">Balanced</div>
+                      <p className="text-sm text-muted-foreground">Groups of 2 Strong & 2 Weak teams.</p>
+                    </Label>
+                     <Label htmlFor="mode-random" className="flex flex-col items-start gap-3 rounded-md border-2 p-4 hover:border-primary/80 cursor-pointer has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
+                      <RadioGroupItem value="random" id="mode-random" />
+                       <div className="font-bold">Fully Random</div>
+                       <p className="text-sm text-muted-foreground">Groups of 4 teams from a single pool.</p>
+                    </Label>
+                  </RadioGroup>
+              </div>
+
+              <Separator />
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-2 md:col-span-2">
@@ -137,7 +201,7 @@ export default function HomePage() {
                       required
                       className="text-base bg-input text-foreground placeholder:text-muted-foreground focus:ring-accent"
                       aria-describedby="groupNamesError"
-                      disabled={currentStrongTeams.length < 2 || currentWeakTeams.length < 2}
+                      disabled={!canGenerate}
                     />
                     {state.fieldErrors?.groupNames && (
                       <p id="groupNamesError" className="text-sm text-destructive mt-1">
@@ -158,7 +222,7 @@ export default function HomePage() {
                       required
                       className="text-base bg-input text-foreground placeholder:text-muted-foreground focus:ring-accent"
                       aria-describedby="numberOfSetsError"
-                      disabled={currentStrongTeams.length < 2 || currentWeakTeams.length < 2}
+                      disabled={!canGenerate}
                     />
                     {state.fieldErrors?.numberOfSets && (
                       <p id="numberOfSetsError" className="text-sm text-destructive mt-1">
@@ -168,7 +232,7 @@ export default function HomePage() {
                   </div>
               </div>
 
-              <SubmitButton disabled={currentStrongTeams.length < 2 || currentWeakTeams.length < 2}>
+              <SubmitButton disabled={!canGenerate}>
                 Generate Teams
               </SubmitButton>
             </form>
@@ -204,7 +268,7 @@ export default function HomePage() {
               <Info className="h-5 w-5 text-primary" />
               <AlertTitle className="text-primary">Ready to Generate!</AlertTitle>
               <AlertDescription className="text-muted-foreground">
-                  Click the <Cog className="inline h-4 w-4" /> icon to edit team lists if needed. Then, enter the group names and click "Generate Teams".
+                  Click the <Cog className="inline h-4 w-4" /> icon to edit team lists if needed. Then, choose your mode, enter group names, and click "Generate Teams".
               </AlertDescription>
            </Alert>
         )}

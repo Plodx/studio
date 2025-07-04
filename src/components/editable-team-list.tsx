@@ -36,8 +36,9 @@ export function EditableTeamList({
   const [newItem, setNewItem] = useState('');
 
   const handleAddItem = () => {
-    if (newItem.trim() && !teams.includes(newItem.trim())) {
-      onTeamsChange([...teams, newItem.trim()]);
+    const trimmedItem = newItem.trim();
+    if (trimmedItem && !teams.find(t => t.toLowerCase() === trimmedItem.toLowerCase())) {
+      onTeamsChange([...teams, trimmedItem]);
       setNewItem('');
     }
     // Consider adding a toast notification for duplicate or empty input
@@ -48,21 +49,18 @@ export function EditableTeamList({
   };
 
   return (
-    <Card className="w-full shadow-lg border border-border/30 rounded-lg">
-      <CardHeader>
-        <CardTitle className="text-xl text-card-foreground">{title}</CardTitle>
-        {description && <CardDescription className="text-muted-foreground">{description}</CardDescription>}
-      </CardHeader>
-      <CardContent>
+    <div className="w-full">
+      <h3 className="text-lg font-semibold text-card-foreground mb-2">{title}</h3>
+        {description && <p className="text-sm text-muted-foreground mb-4">{description}</p>}
         <div className="space-y-4">
           <div className="flex gap-2 items-end">
             <div className="flex-grow space-y-1">
-              <Label htmlFor={`${listId}-input`} className="text-sm font-medium text-card-foreground">{inputLabel}</Label>
+              <Label htmlFor={`${listId}-input`} className="text-sm font-medium text-card-foreground sr-only">{inputLabel}</Label>
               <Input
                 id={`${listId}-input`}
                 value={newItem}
                 onChange={(e) => setNewItem(e.target.value)}
-                placeholder={`Enter a new ${nounSingular}`}
+                placeholder={`Enter a new ${nounSingular}...`}
                 className="text-sm bg-input text-foreground placeholder:text-muted-foreground"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
@@ -82,7 +80,7 @@ export function EditableTeamList({
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Current {nounPlural} ({teams.length}):
               </p>
-              <div className="flex flex-wrap gap-2 p-1 rounded-md max-h-48 overflow-y-auto bg-background border border-input">
+              <div className="flex flex-wrap gap-2 p-2 rounded-md max-h-48 overflow-y-auto bg-background/50 border border-input">
                 {teams.map((item) => (
                   <Badge key={item} variant="secondary" className="text-sm py-1 px-2.5 font-normal">
                     {item}
@@ -101,7 +99,6 @@ export function EditableTeamList({
             <p className="text-sm text-muted-foreground italic pt-2">No {nounPlural} added yet.</p>
           )}
         </div>
-      </CardContent>
-    </Card>
+    </div>
   );
 }
