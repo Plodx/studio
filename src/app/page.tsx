@@ -17,6 +17,7 @@ import { EditableTeamList } from '@/components/editable-team-list';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 const initialState: ActionResult = {
   success: false,
@@ -252,14 +253,18 @@ export default function HomePage() {
             <h2 className="text-3xl font-semibold mb-8 text-center text-primary">
               Generated Teams
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 xl:gap-8">
+            <Accordion type="multiple" className="w-full space-y-4">
               {state.data.map((group) => (
-                <GeneratedTeamCard
-                  key={group.id}
-                  group={group}
-                />
+                <AccordionItem key={group.id} value={group.id} className="bg-card border border-border rounded-lg shadow-lg">
+                  <AccordionTrigger className="w-full text-2xl font-bold text-center text-primary p-6 hover:no-underline">
+                      {group.name}
+                  </AccordionTrigger>
+                  <AccordionContent className="p-6 pt-0">
+                    <GeneratedTeamCard group={group} />
+                  </AccordionContent>
+                </AccordionItem>
               ))}
-            </div>
+            </Accordion>
           </section>
         )}
 
