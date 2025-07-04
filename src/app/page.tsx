@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { GeneratedTeamCard } from '@/components/generated-team-card';
 import { SubmitButton } from '@/components/submit-button';
 import { useToast } from "@/hooks/use-toast";
-import { AlertCircle, Info, Cog, Edit3 } from 'lucide-react';
+import { AlertCircle, Info, Cog } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { strongTeamsList as defaultStrongTeamsList, weakTeamsList as defaultWeakTeamsList } from '@/lib/team-data';
 import { EditableTeamList } from '@/components/editable-team-list';
@@ -50,7 +50,7 @@ export default function HomePage() {
     }
   }, [state, toast]);
 
-  const maxPossibleGroups = Math.max(0, Math.min( // Ensure maxPossibleGroups is not negative
+  const maxPossibleGroups = Math.max(0, Math.min(
     Math.floor(currentStrongTeams.length / 2),
     Math.floor(currentWeakTeams.length / 2)
   ));
@@ -111,7 +111,7 @@ export default function HomePage() {
           <CardHeader>
             <CardTitle className="text-2xl text-card-foreground">Team Generation Setup</CardTitle>
             <CardDescription className="text-muted-foreground">
-              Specify how many groups of teams you want to create.
+              Enter group names, separated by commas. The number of names will determine the number of groups.
               {(currentStrongTeams.length >=2 && currentWeakTeams.length >=2) ?
                 ` Max ${maxPossibleGroups} ${maxPossibleGroups === 1 ? "group" : "groups"} based on current lists.`
                 : " (Add at least 2 strong and 2 weak teams to enable generation)"
@@ -123,24 +123,23 @@ export default function HomePage() {
               <input type="hidden" name="strongTeamsJSON" value={JSON.stringify(currentStrongTeams)} />
               <input type="hidden" name="weakTeamsJSON" value={JSON.stringify(currentWeakTeams)} />
               <div className="space-y-2">
-                <Label htmlFor="numberOfGroups" className="text-base font-medium text-card-foreground">
-                  Number of Groups
+                <Label htmlFor="groupNames" className="text-base font-medium text-card-foreground">
+                  Group Names
                 </Label>
                 <Input
-                  id="numberOfGroups"
-                  name="numberOfGroups"
-                  type="number"
-                  placeholder="e.g., 3"
-                  defaultValue="1"
-                  min="1"
+                  id="groupNames"
+                  name="groupNames"
+                  type="text"
+                  placeholder="e.g., Group A, Group B, Final"
+                  defaultValue="A, B, C, D"
                   required
                   className="text-base bg-input text-foreground placeholder:text-muted-foreground focus:ring-accent"
-                  aria-describedby="numberOfGroupsError"
+                  aria-describedby="groupNamesError"
                   disabled={currentStrongTeams.length < 2 || currentWeakTeams.length < 2}
                 />
-                {state.fieldErrors?.numberOfGroups && (
-                  <p id="numberOfGroupsError" className="text-sm text-destructive mt-1">
-                    {state.fieldErrors.numberOfGroups.join(', ')}
+                {state.fieldErrors?.groupNames && (
+                  <p id="groupNamesError" className="text-sm text-destructive mt-1">
+                    {state.fieldErrors.groupNames.join(', ')}
                   </p>
                 )}
               </div>
@@ -165,11 +164,10 @@ export default function HomePage() {
               Generated Teams
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 xl:gap-8">
-              {state.data.map((group, index) => (
+              {state.data.map((group) => (
                 <GeneratedTeamCard
                   key={group.id}
                   group={group}
-                  groupNumber={index + 1}
                 />
               ))}
             </div>
@@ -181,7 +179,7 @@ export default function HomePage() {
               <Info className="h-5 w-5 text-primary" />
               <AlertTitle className="text-primary">Ready to Generate!</AlertTitle>
               <AlertDescription className="text-muted-foreground">
-                  Click the <Cog className="inline h-4 w-4" /> icon to edit team lists if needed. Then, enter the number of groups and click "Generate Teams".
+                  Click the <Cog className="inline h-4 w-4" /> icon to edit team lists if needed. Then, enter the group names and click "Generate Teams".
               </AlertDescription>
            </Alert>
         )}

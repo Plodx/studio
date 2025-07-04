@@ -20,14 +20,15 @@ export interface Team {
 
 export interface GeneratedGroup {
   id: string;
+  name: string;
   strongTeams: Team[];
   weakTeams: Team[];
 }
 
 export type GeneratedSet = GeneratedGroup[];
 
-const BaseTeamSubmissionSchema = z.object({
-  numberOfGroupsString: z.string().optional(), // Keep as string for now, coerce later
+const TeamSubmissionSchema = z.object({
+  groupNames: z.string().min(1, { message: 'Group names cannot be empty.' }),
   strongTeamsJSON: z.string().refine(
     (val) => {
       try {
@@ -56,7 +57,7 @@ export interface ActionResult {
   success: boolean;
   data?: GeneratedSet;
   error?: string | null;
-  fieldErrors?: Partial<Record<'numberOfGroups' | 'strongTeamsJSON' | 'weakTeamsJSON', string[]>>;
+  fieldErrors?: Partial<Record<'groupNames' | 'strongTeamsJSON' | 'weakTeamsJSON', string[]>>;
 }
 
 
@@ -66,18 +67,18 @@ export async function generateTeamsAction(
 ): Promise<ActionResult> {
 
   const rawInput = {
-    numberOfGroupsString: formData.get('numberOfGroups'),
+    groupNames: formData.get('groupNames'),
     strongTeamsJSON: formData.get('strongTeamsJSON'),
     weakTeamsJSON: formData.get('weakTeamsJSON'),
   };
 
-  const parsedBase = BaseTeamSubmissionSchema.safeParse(rawInput);
+  const parsed = TeamSubmissionSchema.safeParse(rawInput);
 
-  if (!parsedBase.success) {
+  if (!parsed.success) {
     return {
       success: false,
-      error: "Invalid input format for team lists or number of groups.",
-      fieldErrors: parsedBase.error.flatten().fieldErrors as ActionResult['fieldErrors'],
+      error: "Invalid input format.",
+      fieldErrors: parsed.error.flatten().fieldErrors as ActionResult['fieldErrors'],
     };
   }
 
@@ -85,15 +86,32 @@ export async function generateTeamsAction(
   let weakTeams: string[];
 
   try {
-    strongTeams = JSON.parse(parsedBase.data.strongTeamsJSON);
-    weakTeams = JSON.parse(parsedBase.data.weakTeamsJSON);
+    strongTeams = JSON.parse(parsed.data.strongTeamsJSON);
+    weakTeams = JSON.parse(parsed.data.weakTeamsJSON);
   } catch (e) {
-    // This case should ideally be caught by Zod's refine, but as a fallback:
     return {
         success: false,
         error: "Failed to parse team lists. Ensure they are correctly formatted.",
     };
   }
+  
+  const groupNames = parsed.data.groupNames
+    .split(',')
+    .map(name => name.trim())
+    .filter(name => name.length > 0);
+
+  if (groupNames.length === 0) {
+    return {
+      success: false,
+      error: "Invalid group names provided.",
+      fieldErrors: {
+        groupNames: ['Please provide at least one valid group name.']
+      }
+    };
+  }
+
+  const numberOfGroups = groupNames.length;
+
 
   if (strongTeams.length < 2 || weakTeams.length < 2) {
     return {
@@ -105,48 +123,21 @@ export async function generateTeamsAction(
       }
     };
   }
-
+  
   const maxPossibleGroups = Math.min(Math.floor(strongTeams.length / 2), Math.floor(weakTeams.length / 2));
 
-  const GenerateTeamsSchema = z.object({
-    numberOfGroups: z.coerce
-      .number({ invalid_type_error: "Number of groups must be a number." })
-      .int({ message: "Number of groups must be a whole number." })
-      .min(1, "Must generate at least one group.")
-      .max(maxPossibleGroups, `Cannot generate more than ${maxPossibleGroups} ${maxPossibleGroups === 1 ? "group" : "groups"} with the provided ${strongTeams.length} strong and ${weakTeams.length} weak teams. (Need 2 of each type per group).`),
-  });
-
-  const validatedFields = GenerateTeamsSchema.safeParse({
-      numberOfGroups: parsedBase.data.numberOfGroupsString
-  });
-
-  if (!validatedFields.success) {
+  if (numberOfGroups > maxPossibleGroups) {
     return {
       success: false,
-      error: "Invalid input for number of groups.",
+      error: `Cannot generate more than ${maxPossibleGroups} ${maxPossibleGroups === 1 ? "group" : "groups"} with the provided teams.`,
       fieldErrors: {
-        ...((parsedBase.success ? {} : parsedBase.error.flatten().fieldErrors) as ActionResult['fieldErrors']),
-        ...(validatedFields.error.flatten().fieldErrors as Partial<Record<'numberOfGroups', string[]>>)
+        groupNames: [`You requested ${numberOfGroups} groups, but can only form a maximum of ${maxPossibleGroups} with the current team lists.`]
       }
     };
   }
 
-  const { numberOfGroups } = validatedFields.data;
-
-  const requiredStrong = numberOfGroups * 2;
-  const requiredWeak = numberOfGroups * 2;
-
-  // These checks are now against the dynamically provided and parsed lists
-  // (though maxPossibleGroups check in Zod should cover this)
-  if (requiredStrong > strongTeams.length) {
-    return { success: false, error: `Not enough unique strong teams for ${numberOfGroups} groups. Need ${requiredStrong}, have ${strongTeams.length}.` };
-  }
-  if (requiredWeak > weakTeams.length) {
-    return { success: false, error: `Not enough unique weak teams for ${numberOfGroups} groups. Need ${requiredWeak}, have ${weakTeams.length}.` };
-  }
-
   try {
-    let availableStrongTeams = shuffleArray([...strongTeams]); // Use copies for shuffling
+    let availableStrongTeams = shuffleArray([...strongTeams]);
     let availableWeakTeams = shuffleArray([...weakTeams]);
 
     const generatedSet: GeneratedSet = [];
@@ -154,31 +145,19 @@ export async function generateTeamsAction(
       const groupStrongTeams: Team[] = [];
       const groupWeakTeams: Team[] = [];
 
-      if (availableStrongTeams.length < 2 || availableWeakTeams.length < 2) {
-        // This should ideally be caught by earlier logic (e.g. maxPossibleGroups validation)
-        return { success: false, error: "Ran out of unique teams during generation. Check if enough teams were provided for the requested number of groups." };
-      }
-
       for (let j = 0; j < 2; j++) {
         const teamName = availableStrongTeams.pop();
-        if (teamName) {
-          groupStrongTeams.push({ name: teamName, type: 'strong' });
-        } else {
-           return { success: false, error: "Internal error: Failed to pick a strong team when expected." };
-        }
+        groupStrongTeams.push({ name: teamName!, type: 'strong' });
       }
 
       for (let j = 0; j < 2; j++) {
         const teamName = availableWeakTeams.pop();
-        if (teamName) {
-          groupWeakTeams.push({ name: teamName, type: 'weak' });
-        } else {
-          return { success: false, error: "Internal error: Failed to pick a weak team when expected." };
-        }
+        groupWeakTeams.push({ name: teamName!, type: 'weak' });
       }
 
       generatedSet.push({
-        id: `group-${i + 1}-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`, // More unique ID
+        id: `group-${i + 1}-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+        name: groupNames[i],
         strongTeams: groupStrongTeams,
         weakTeams: groupWeakTeams,
       });
@@ -186,7 +165,6 @@ export async function generateTeamsAction(
     return { success: true, data: generatedSet, error: null };
   } catch (e) {
     console.error("Team generation error:", e);
-    // Check if e is an error instance before accessing message
     const errorMessage = e instanceof Error ? e.message : "An unknown error occurred.";
     return { success: false, error: `An unexpected error occurred during team generation: ${errorMessage}` };
   }

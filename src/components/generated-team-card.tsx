@@ -5,7 +5,6 @@ import { ShieldCheck, Circle } from 'lucide-react';
 
 interface GeneratedTeamCardProps {
   group: GeneratedGroup;
-  groupNumber: number;
 }
 
 const TeamListItem: React.FC<{ team: Team }> = ({ team }) => (
@@ -19,12 +18,12 @@ const TeamListItem: React.FC<{ team: Team }> = ({ team }) => (
   </li>
 );
 
-export function GeneratedTeamCard({ group, groupNumber }: GeneratedTeamCardProps) {
+export function GeneratedTeamCard({ group }: GeneratedTeamCardProps) {
   return (
     <Card className="w-full shadow-xl transform transition-all hover:scale-[1.02] duration-300 ease-out bg-card rounded-lg border">
       <CardHeader className="pb-4">
         <CardTitle className="text-2xl font-bold text-center text-primary">
-          Group {groupNumber}
+          {group.name}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4 pt-0">
