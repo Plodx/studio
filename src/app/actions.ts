@@ -152,12 +152,18 @@ export async function generateTeamsAction(
 
       for (let j = 0; j < 2; j++) {
         const teamName = availableStrongTeams.pop();
-        groupStrongTeams.push({ name: teamName!, type: 'strong' });
+        if (!teamName) {
+            throw new Error("Internal error: Strong team pool depleted unexpectedly. Check validation logic.");
+        }
+        groupStrongTeams.push({ name: teamName, type: 'strong' });
       }
 
       for (let j = 0; j < 2; j++) {
         const teamName = availableWeakTeams.pop();
-        groupWeakTeams.push({ name: teamName!, type: 'weak' });
+        if (!teamName) {
+            throw new Error("Internal error: Weak team pool depleted unexpectedly. Check validation logic.");
+        }
+        groupWeakTeams.push({ name: teamName, type: 'weak' });
       }
 
       const setNumber = Math.floor(i / numberOfGroupsPerSet) + 1;
