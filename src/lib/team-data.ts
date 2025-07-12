@@ -4,5 +4,5 @@ export const strongTeamsList: string[] = [
 ];
 
 export const weakTeamsList: string[] = [
-  "Monaco", "Lyon", "Totenham", "Udinese", "Marsellie", "Benfica", "Atletico Madrid", "Turkey", "Boca", "River", "Liverpool", "Arsenal", "Bayern Munich", "Argentina", "Zaragoza", "Rep Checa", "Roma", "Portugal", "Valencia", "Newcastle", "Villarreal", "Alemania", "Suecia", "Ajax", "Celtic", "Leverkusen 25", "Croacia 25", "Porto 25", "Benfica 25", "Colombia 25", "Milan 25", "Napoli 25", "Uruguay 25", "COMODIN B", "Al-Nassr 25", "Belgica 25", "Celtic 25", "Galatasaray 25", "Inter Miami 25", "Japon 25", "Mexico 25", "River 25", "Roma 25", "USA 25"
+  "Monaco", "Lyon", "Totenham", "Udinese", "Marsellie", "Benfica", "Atletico Madrid", "Turkey", "Boca", "River", "Liverpool", "Arsenal", "Bayern Munich", "Argentina", "Zaragoza", "Rep Checa", "Roma", "Portugal", "Valencia", "Newcastle", "Villarreal", "Alemania", "Suecia", "Ajax", "Celtic", "Leipzig 25", "Noruega 25", "Benfica 25", "Chelsea 25", "Milan 25", "Napoli 25", "Man United 25", "COMODIN B", "Al-Nassr 25", "Celtic 25", "Galatasaray 25", "Inter Miami 25", "Newcastle 25", "Juventus 25", "River 25", "Roma 25", "Borussia Dortmun 25", "Aston Villa 25", "Atlhetic Bilbao 25", "Tottenham 25"
 ];
