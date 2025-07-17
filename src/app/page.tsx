@@ -10,9 +10,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { GeneratedTeamCard } from '@/components/generated-team-card';
 import { SubmitButton } from '@/components/submit-button';
 import { useToast } from "@/hooks/use-toast";
-import { AlertCircle, Info, Cog, SlidersHorizontal } from 'lucide-react';
+import { AlertCircle, Info, Cog, SlidersHorizontal, History, Sparkles } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { strongTeamsList as defaultStrongTeamsList, weakTeamsList as defaultWeakTeamsList } from '@/lib/team-data';
+import { newStrongTeamsList, newWeakTeamsList, legacyStrongTeamsList, legacyWeakTeamsList } from '@/lib/team-data';
 import { EditableTeamList } from '@/components/editable-team-list';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -26,17 +26,34 @@ const initialState: ActionResult = {
   fieldErrors: {},
 };
 
+type TeamListVersion = 'new' | 'legacy';
+
 export default function HomePage() {
   const [state, formAction] = useActionState(generateTeamsAction, initialState);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
 
   const [generationMode, setGenerationMode] = useState<'balanced' | 'random'>('balanced');
+  const [teamListVersion, setTeamListVersion] = useState<TeamListVersion>('new');
   
-  const [currentStrongTeams, setCurrentStrongTeams] = useState<string[]>(defaultStrongTeamsList);
-  const [currentWeakTeams, setCurrentWeakTeams] = useState<string[]>(defaultWeakTeamsList);
-  const [allTeams, setAllTeams] = useState<string[]>([...new Set([...defaultStrongTeamsList, ...defaultWeakTeamsList])]);
+  const [currentStrongTeams, setCurrentStrongTeams] = useState<string[]>(newStrongTeamsList);
+  const [currentWeakTeams, setCurrentWeakTeams] = useState<string[]>(newWeakTeamsList);
+  const [allTeams, setAllTeams] = useState<string[]>([...new Set([...newStrongTeamsList, ...newWeakTeamsList])]);
+  
   const [showTeamEditors, setShowTeamEditors] = useState(false);
+
+  useEffect(() => {
+    if (teamListVersion === 'new') {
+      setCurrentStrongTeams(newStrongTeamsList);
+      setCurrentWeakTeams(newWeakTeamsList);
+      setAllTeams([...new Set([...newStrongTeamsList, ...newWeakTeamsList])]);
+    } else {
+      setCurrentStrongTeams(legacyStrongTeamsList);
+      setCurrentWeakTeams(legacyWeakTeamsList);
+      setAllTeams([...new Set([...legacyStrongTeamsList, ...legacyWeakTeamsList])]);
+    }
+  }, [teamListVersion]);
+
 
   useEffect(() => {
     if (state.success && state.data) {
@@ -112,7 +129,7 @@ export default function HomePage() {
            <Card className="w-full shadow-lg border-border/30 rounded-lg">
              <CardHeader>
                <CardTitle className="text-xl text-card-foreground">Team Editors</CardTitle>
-               <CardDescription className="text-muted-foreground">Manage the team pools for generation.</CardDescription>
+               <CardDescription className="text-muted-foreground">Manage the team pools for generation. Current version: <span className="font-bold capitalize">{teamListVersion}</span></CardDescription>
              </CardHeader>
              <CardContent className="space-y-6">
                 {generationMode === 'balanced' ? (
@@ -182,24 +199,54 @@ export default function HomePage() {
               )}
                <input type="hidden" name="generationMode" value={generationMode} />
 
-              <div className="space-y-2">
-                <Label className="text-base font-medium text-card-foreground">Generation Mode</Label>
-                 <RadioGroup
-                    value={generationMode}
-                    onValueChange={(value: 'balanced' | 'random') => setGenerationMode(value)}
-                    className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1"
-                  >
-                    <Label htmlFor="mode-balanced" className="flex flex-col items-start gap-3 rounded-md border-2 p-4 hover:border-primary/80 cursor-pointer has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
-                      <RadioGroupItem value="balanced" id="mode-balanced" />
-                      <div className="font-bold">Balanced</div>
-                      <p className="text-sm text-muted-foreground">Groups of 2 Strong & 2 Weak teams.</p>
-                    </Label>
-                     <Label htmlFor="mode-random" className="flex flex-col items-start gap-3 rounded-md border-2 p-4 hover:border-primary/80 cursor-pointer has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
-                      <RadioGroupItem value="random" id="mode-random" />
-                       <div className="font-bold">Fully Random</div>
-                       <p className="text-sm text-muted-foreground">Groups of 4 teams from a single pool.</p>
-                    </Label>
-                  </RadioGroup>
+              <div className="space-y-4">
+                 <div className="space-y-2">
+                  <Label className="text-base font-medium text-card-foreground">Team List Version</Label>
+                   <RadioGroup
+                      value={teamListVersion}
+                      onValueChange={(value: TeamListVersion) => setTeamListVersion(value)}
+                      className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1"
+                    >
+                      <Label htmlFor="version-new" className="flex flex-col items-start gap-3 rounded-md border-2 p-4 hover:border-primary/80 cursor-pointer has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
+                        <div className="flex items-center gap-2">
+                          <RadioGroupItem value="new" id="version-new" />
+                          <Sparkles className="h-5 w-5" />
+                          <span className="font-bold">New</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground ml-7">The latest and greatest team lists.</p>
+                      </Label>
+                       <Label htmlFor="version-legacy" className="flex flex-col items-start gap-3 rounded-md border-2 p-4 hover:border-primary/80 cursor-pointer has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
+                        <div className="flex items-center gap-2">
+                          <RadioGroupItem value="legacy" id="version-legacy" />
+                          <History className="h-5 w-5" />
+                          <span className="font-bold">Legacy</span>
+                        </div>
+                         <p className="text-sm text-muted-foreground ml-7">Classic team lists for a vintage experience.</p>
+                      </Label>
+                    </RadioGroup>
+                </div>
+                
+                <Separator />
+
+                <div className="space-y-2">
+                  <Label className="text-base font-medium text-card-foreground">Generation Mode</Label>
+                   <RadioGroup
+                      value={generationMode}
+                      onValueChange={(value: 'balanced' | 'random') => setGenerationMode(value)}
+                      className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1"
+                    >
+                      <Label htmlFor="mode-balanced" className="flex flex-col items-start gap-3 rounded-md border-2 p-4 hover:border-primary/80 cursor-pointer has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
+                        <RadioGroupItem value="balanced" id="mode-balanced" />
+                        <div className="font-bold">Balanced</div>
+                        <p className="text-sm text-muted-foreground">Groups of 2 Strong & 2 Weak teams.</p>
+                      </Label>
+                       <Label htmlFor="mode-random" className="flex flex-col items-start gap-3 rounded-md border-2 p-4 hover:border-primary/80 cursor-pointer has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
+                        <RadioGroupItem value="random" id="mode-random" />
+                         <div className="font-bold">Fully Random</div>
+                         <p className="text-sm text-muted-foreground">Groups of 4 teams from a single pool.</p>
+                      </Label>
+                    </RadioGroup>
+                </div>
               </div>
 
               <Separator />
