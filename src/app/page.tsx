@@ -204,7 +204,7 @@ export default function HomePage() {
                   <Label className="text-base font-medium text-card-foreground">Team List Version</Label>
                    <RadioGroup
                       value={teamListVersion}
-                      onValueChange={(value: TeamListVersion) => setTeamListVersion(value)}
+                      onValueChange={(value) => setTeamListVersion(value as TeamListVersion)}
                       className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1"
                     >
                       <Label htmlFor="version-new" className="flex flex-col items-start gap-3 rounded-md border-2 p-4 hover:border-primary/80 cursor-pointer has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
@@ -232,18 +232,22 @@ export default function HomePage() {
                   <Label className="text-base font-medium text-card-foreground">Generation Mode</Label>
                    <RadioGroup
                       value={generationMode}
-                      onValueChange={(value: 'balanced' | 'random') => setGenerationMode(value)}
+                      onValueChange={(value) => setGenerationMode(value as 'balanced' | 'random')}
                       className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1"
                     >
                       <Label htmlFor="mode-balanced" className="flex flex-col items-start gap-3 rounded-md border-2 p-4 hover:border-primary/80 cursor-pointer has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
-                        <RadioGroupItem value="balanced" id="mode-balanced" />
-                        <div className="font-bold">Balanced</div>
-                        <p className="text-sm text-muted-foreground">Groups of 2 Strong & 2 Weak teams.</p>
+                        <div className="flex items-center gap-2">
+                          <RadioGroupItem value="balanced" id="mode-balanced" />
+                          <span className="font-bold">Balanced</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground ml-7">Groups of 2 Strong & 2 Weak teams.</p>
                       </Label>
                        <Label htmlFor="mode-random" className="flex flex-col items-start gap-3 rounded-md border-2 p-4 hover:border-primary/80 cursor-pointer has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
-                        <RadioGroupItem value="random" id="mode-random" />
-                         <div className="font-bold">Fully Random</div>
-                         <p className="text-sm text-muted-foreground">Groups of 4 teams from a single pool.</p>
+                         <div className="flex items-center gap-2">
+                          <RadioGroupItem value="random" id="mode-random" />
+                          <span className="font-bold">Fully Random</span>
+                         </div>
+                         <p className="text-sm text-muted-foreground ml-7">Groups of 4 teams from a single pool.</p>
                       </Label>
                     </RadioGroup>
                 </div>
