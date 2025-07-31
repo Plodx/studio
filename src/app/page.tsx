@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 const initialState: ActionResult = {
   success: false,
@@ -112,15 +113,17 @@ export default function HomePage() {
               Generate balanced or fully random teams for your tournament.
             </p>
           </div>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setShowTeamEditors(!showTeamEditors)}
-            aria-label={showTeamEditors ? "Hide team editors" : "Show team editors"}
-            className="ml-4"
-          >
-            <Cog className="h-6 w-6 text-primary" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setShowTeamEditors(!showTeamEditors)}
+              aria-label={showTeamEditors ? "Hide team editors" : "Show team editors"}
+            >
+              <Cog className="h-6 w-6 text-primary" />
+            </Button>
+          </div>
         </div>
       </header>
 
