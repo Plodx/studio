@@ -4,8 +4,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from '@/components/theme-provider';
 
 export const metadata: Metadata = {
-  title: 'EquipoRandomizer',
-  description: 'Generates random teams with strong and weak pairings.',
+  title: 'PES 6 Randomizer',
+  description: 'Generate random teams for PES 6.',
 };
 
 export default function RootLayout({
