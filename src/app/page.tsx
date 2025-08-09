@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { GeneratedTeamCard } from '@/components/generated-team-card';
 import { SubmitButton } from '@/components/submit-button';
 import { useToast } from "@/hooks/use-toast";
-import { AlertCircle, Info, Cog, SlidersHorizontal, History, Sparkles, SoccerBall } from 'lucide-react';
+import { AlertCircle, Info, Cog, SlidersHorizontal, History, Sparkles, Trophy } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { newStrongTeamsList, newWeakTeamsList, legacyStrongTeamsList, legacyWeakTeamsList } from '@/lib/team-data';
 import { EditableTeamList } from '@/components/editable-team-list';
@@ -107,7 +107,7 @@ export default function HomePage() {
         <div className="flex justify-between items-center">
           <div className="flex-1 text-center">
             <div className="flex items-center justify-center gap-4">
-              <SoccerBall className="h-12 w-12 text-primary" />
+              <Trophy className="h-12 w-12 text-primary" />
               <h1 className="text-5xl font-extrabold tracking-tight text-primary">
                 PES 6 <span style={{ color: 'hsl(var(--accent))' }}>Randomizer</span>
               </h1>
@@ -367,5 +367,3 @@ export default function HomePage() {
     </main>
   );
 }
-
-    
