@@ -19,6 +19,9 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { AuthProvider, useAuth } from '@/context/auth-context';
+import { UserButton } from '@/components/auth/user-button';
+
 
 const initialState: ActionResult = {
   success: false,
@@ -29,10 +32,13 @@ const initialState: ActionResult = {
 
 type TeamListVersion = 'new' | 'legacy';
 
-export default function HomePage() {
+
+function HomePageContent() {
   const [state, formAction] = useActionState(generateTeamsAction, initialState);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
+  const { user } = useAuth();
+
 
   const [generationMode, setGenerationMode] = useState<'balanced' | 'random'>('balanced');
   const [teamListVersion, setTeamListVersion] = useState<TeamListVersion>('new');
@@ -117,6 +123,7 @@ export default function HomePage() {
             </p>
           </div>
           <div className="flex items-center gap-2">
+            <UserButton />
             <ThemeToggle />
             <Button
               variant="outline"
@@ -366,4 +373,13 @@ export default function HomePage() {
       </div>
     </main>
   );
+}
+
+
+export default function HomePage() {
+  return (
+    <AuthProvider>
+      <HomePageContent />
+    </AuthProvider>
+  )
 }
