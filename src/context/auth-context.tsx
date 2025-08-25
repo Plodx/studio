@@ -20,21 +20,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // This function handles the redirect result from Google Sign-In.
-    const handleRedirect = async () => {
+    const processAuth = async () => {
       try {
         const result = await getRedirectResult(auth);
         if (result) {
-          // User is signed in.
-          setUser(result.user);
+          // Si hay un resultado del redirect, el onAuthStateChanged
+          // se disparará de todas formas, así que no necesitamos
+          // llamar a setUser(result.user) aquí. El listener de abajo lo hará.
+          // Esto evita potenciales re-renders.
         }
       } catch (error) {
-        // Handle Errors here.
         console.error("Error getting redirect result:", error);
+      } finally {
+        // En este punto, ya sea que hubo redirect o no,
+        // podemos confiar en onAuthStateChanged para el estado final.
       }
     };
     
-    handleRedirect();
+    processAuth();
 
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
@@ -58,7 +61,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = async () => {
     try {
       await signOut(auth);
-      setUser(null); // Explicitly set user to null on logout
+      // setUser a null ya se maneja por el onAuthStateChanged
     } catch (error) {
       console.error("Error signing out: ", error);
     }
