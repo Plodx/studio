@@ -2,7 +2,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { onAuthStateChanged, User, GoogleAuthProvider, signInWithRedirect, signOut } from 'firebase/auth';
+import { onAuthStateChanged, User, GoogleAuthProvider, signInWithRedirect, signOut, getRedirectResult } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { Loader2 } from 'lucide-react';
 
@@ -20,8 +20,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
+    // This function handles the redirect result from Google Sign-In.
+    const handleRedirect = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        if (result) {
+          // User is signed in.
+          setUser(result.user);
+        }
+      } catch (error) {
+        // Handle Errors here.
+        console.error("Error getting redirect result:", error);
+      }
+    };
+    
+    handleRedirect();
+
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
       setLoading(false);
     });
 
@@ -31,17 +47,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
     try {
-      setLoading(true); // Show loader before redirecting
+      setLoading(true); 
       await signInWithRedirect(auth, provider);
     } catch (error) {
       console.error("Error signing in with Google: ", error);
-      setLoading(false); // Hide loader on error
+      setLoading(false);
     }
   };
 
   const logout = async () => {
     try {
       await signOut(auth);
+      setUser(null); // Explicitly set user to null on logout
     } catch (error) {
       console.error("Error signing out: ", error);
     }
