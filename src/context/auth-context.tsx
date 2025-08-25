@@ -31,9 +31,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
     try {
+      setLoading(true); // Show loader before redirecting
       await signInWithRedirect(auth, provider);
     } catch (error) {
       console.error("Error signing in with Google: ", error);
+      setLoading(false); // Hide loader on error
     }
   };
 
