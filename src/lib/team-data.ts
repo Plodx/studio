@@ -4,11 +4,11 @@ export const newStrongTeamsList: string[] = [
 ];
 
 export const newMediumTeamsList: string[] = [
-  "Ajax", "Atletico Madrid", "Benfica", "Boca", "Comodín B", "Fiorentina", "Lazio", "Lyon", "Marseille", "Monaco", "Newcastle", "Porto", "PSV", "Portugal", "República Checa", "Roma", "Sevilla", "Sporting Lisboa", "Suecia", "Tottenham", "Ucrania", "Valencia", "Villareal"
+  "Ajax", "Atletico Madrid", "Benfica", "Boca", "Celtic", "Comodín B", "Fiorentina", "Irlanda", "Lazio", "Lyon", "Marseille", "Monaco", "Newcastle", "Porto", "PSV", "Portugal", "República Checa", "Roma", "Sevilla", "Sporting Lisboa", "Suecia", "Tottenham", "Ucrania", "Valencia", "Villareal"
 ];
 
 export const newWeakTeamsList: string[] = [
-  "Aston Villa", "Belgica", "Betis", "Celtic", "Charlton", "Chievo Verona", "Comodín C", "Costa de Marfil", "Croacia", "Dinamarca", "Everton", "Fulham", "Irlanda", "Man City", "Middlebrook", "Olympiacos", "Palermo", "River", "Saint-Étienne", "Sampdoria", "Siena", "Tesside", "Turquia", "Udinese", "Uruguay", "West Ham", "Zaragoza"
+  "Aston Villa", "Belgica", "Betis", "Charlton", "Chievo Verona", "Comodín C", "Costa de Marfil", "Croacia", "Dinamarca", "Everton", "Fulham", "Man City", "Middlebrook", "Olympiacos", "Palermo", "River", "Saint-Étienne", "Sampdoria", "Siena", "Tesside", "Turquia", "Udinese", "Uruguay", "West Ham", "Zaragoza"
 ];
 
 export const legacyStrongTeamsList: string[] = [
