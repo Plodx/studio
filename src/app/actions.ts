@@ -15,13 +15,14 @@ function shuffleArray<T>(array: T[]): T[] {
 
 export interface Team {
   name: string;
-  type: 'strong' | 'weak' | 'neutral';
+  type: 'strong' | 'weak' | 'neutral' | 'medium';
 }
 
 export interface GeneratedGroup {
   id: string;
   name: string;
   strongTeams: Team[];
+  mediumTeams?: Team[];
   weakTeams: Team[];
 }
 
@@ -30,8 +31,9 @@ export type GeneratedSet = GeneratedGroup[];
 const TeamSubmissionSchema = z.object({
   groupNames: z.string().min(1, { message: 'Group names cannot be empty.' }),
   numberOfSets: z.string().transform(Number).pipe(z.number().int().min(1, { message: 'Number of sets must be at least 1.' })),
-  generationMode: z.enum(['balanced', 'random'], { required_error: 'Generation mode is required.'}),
+  generationMode: z.enum(['balanced', 'random', 'balanced-v2'], { required_error: 'Generation mode is required.'}),
   strongTeamsJSON: z.string().nullish(),
+  mediumTeamsJSON: z.string().nullish(),
   weakTeamsJSON: z.string().nullish(),
   allTeamsJSON: z.string().nullish(),
 }).superRefine((data, ctx) => {
@@ -41,6 +43,16 @@ const TeamSubmissionSchema = z.object({
         }
         if (!data.weakTeamsJSON || data.weakTeamsJSON === '[]') {
             ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Weak teams list cannot be empty for balanced mode.', path: ['weakTeamsJSON'] });
+        }
+    } else if (data.generationMode === 'balanced-v2') {
+        if (!data.strongTeamsJSON || data.strongTeamsJSON === '[]') {
+            ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Strong teams list cannot be empty for Balanced V2 mode.', path: ['strongTeamsJSON'] });
+        }
+        if (!data.mediumTeamsJSON || data.mediumTeamsJSON === '[]') {
+            ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Medium teams list cannot be empty for Balanced V2 mode.', path: ['mediumTeamsJSON'] });
+        }
+        if (!data.weakTeamsJSON || data.weakTeamsJSON === '[]') {
+            ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Weak teams list cannot be empty for Balanced V2 mode.', path: ['weakTeamsJSON'] });
         }
     } else if (data.generationMode === 'random') {
         if (!data.allTeamsJSON || data.allTeamsJSON === '[]') {
@@ -54,7 +66,7 @@ export interface ActionResult {
   success: boolean;
   data?: GeneratedSet;
   error?: string | null;
-  fieldErrors?: Partial<Record<'groupNames' | 'strongTeamsJSON' | 'weakTeamsJSON' | 'numberOfSets' | 'allTeamsJSON' | 'generationMode', string[]>>;
+  fieldErrors?: Partial<Record<'groupNames' | 'strongTeamsJSON' | 'mediumTeamsJSON' | 'weakTeamsJSON' | 'numberOfSets' | 'allTeamsJSON' | 'generationMode', string[]>>;
 }
 
 
@@ -68,6 +80,7 @@ export async function generateTeamsAction(
     numberOfSets: formData.get('numberOfSets'),
     generationMode: formData.get('generationMode'),
     strongTeamsJSON: formData.get('strongTeamsJSON'),
+    mediumTeamsJSON: formData.get('mediumTeamsJSON'),
     weakTeamsJSON: formData.get('weakTeamsJSON'),
     allTeamsJSON: formData.get('allTeamsJSON'),
   };
@@ -150,7 +163,7 @@ export async function generateTeamsAction(
       }
       return { success: true, data: generatedSet, error: null };
 
-    } else { // 'balanced' mode
+    } else if (generationMode === 'balanced') {
       let strongTeams: string[];
       let weakTeams: string[];
       try {
@@ -210,6 +223,81 @@ export async function generateTeamsAction(
           id: `group-${i + 1}-${Date.now()}`,
           name: finalGroupName,
           strongTeams: groupStrongTeams,
+          weakTeams: groupWeakTeams,
+        });
+      }
+      return { success: true, data: generatedSet, error: null };
+    } else { // 'balanced-v2' mode
+      let strongTeams: string[];
+      let mediumTeams: string[];
+      let weakTeams: string[];
+      try {
+        strongTeams = JSON.parse(parsed.data.strongTeamsJSON!);
+        mediumTeams = JSON.parse(parsed.data.mediumTeamsJSON!);
+        weakTeams = JSON.parse(parsed.data.weakTeamsJSON!);
+      } catch (e) {
+        return { success: false, error: "Failed to parse team lists. Ensure they are correctly formatted." };
+      }
+
+      if (strongTeams.length < 2 || mediumTeams.length < 1 || weakTeams.length < 1) {
+        return {
+          success: false,
+          error: `Not enough teams to form any groups.`,
+          fieldErrors: {
+            strongTeamsJSON: strongTeams.length < 2 ? [`Need at least 2 strong teams (have ${strongTeams.length}).`] : undefined,
+            mediumTeamsJSON: mediumTeams.length < 1 ? [`Need at least 1 medium team (have ${mediumTeams.length}).`] : undefined,
+            weakTeamsJSON: weakTeams.length < 1 ? [`Need at least 1 weak team (have ${weakTeams.length}).`] : undefined,
+          }
+        };
+      }
+
+      const maxPossibleTotalGroups = Math.min(Math.floor(strongTeams.length / 2), mediumTeams.length, weakTeams.length);
+      if (totalGroupsToGenerate > maxPossibleTotalGroups) {
+        return {
+          success: false,
+          error: `You are trying to generate ${totalGroupsToGenerate} groups, but you only have enough teams for ${maxPossibleTotalGroups}.`,
+          fieldErrors: {
+            groupNames: [`Reduce the number of groups or sets.`],
+            numberOfSets: [`Reduce the number of groups or sets.`]
+          }
+        };
+      }
+      
+      let availableStrongTeams = shuffleArray([...strongTeams]);
+      let availableMediumTeams = shuffleArray([...mediumTeams]);
+      let availableWeakTeams = shuffleArray([...weakTeams]);
+      const generatedSet: GeneratedSet = [];
+
+      for (let i = 0; i < totalGroupsToGenerate; i++) {
+        const groupStrongTeams: Team[] = [];
+        const groupMediumTeams: Team[] = [];
+        const groupWeakTeams: Team[] = [];
+
+        // 2 Strong
+        for (let j = 0; j < 2; j++) {
+          const teamName = availableStrongTeams.pop();
+          if (!teamName) throw new Error("Internal error: Strong team pool depleted unexpectedly.");
+          groupStrongTeams.push({ name: teamName, type: 'strong' });
+        }
+        // 1 Medium
+        const mediumTeamName = availableMediumTeams.pop();
+        if (!mediumTeamName) throw new Error("Internal error: Medium team pool depleted unexpectedly.");
+        groupMediumTeams.push({ name: mediumTeamName, type: 'medium' });
+
+        // 1 Weak
+        const weakTeamName = availableWeakTeams.pop();
+        if (!weakTeamName) throw new Error("Internal error: Weak team pool depleted unexpectedly.");
+        groupWeakTeams.push({ name: weakTeamName, type: 'weak' });
+
+        const setNumber = Math.floor(i / numberOfGroupsPerSet) + 1;
+        const baseGroupName = groupNames[i % numberOfGroupsPerSet];
+        const finalGroupName = numberOfSets > 1 ? `${baseGroupName} (Set ${setNumber})` : baseGroupName;
+
+        generatedSet.push({
+          id: `group-${i + 1}-${Date.now()}`,
+          name: finalGroupName,
+          strongTeams: groupStrongTeams,
+          mediumTeams: groupMediumTeams,
           weakTeams: groupWeakTeams,
         });
       }

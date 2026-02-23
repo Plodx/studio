@@ -1,16 +1,24 @@
 
 export const newStrongTeamsList: string[] = [
-  "Argentina", "Arsenal", "Barcelona", "Bayern Munchen", "Brasil", "Chelsea", "Comodín A", "España", "Francia", "Alemania", "Holanda", "Inglaterra", "Inter", "Italia", "Juventus", "Liverpool", "Man United", "Milan", "Bayern Munchen 15", "Portugal", "Real Madrid", "República Checa", "Roma", "Suecia", "Real Madrid 15", "PSG 15", "Barcelona 15"
+  "Argentina", "Arsenal", "Barcelona", "Bayern Munchen", "Brasil", "Chelsea", "Comodín A", "España", "Francia", "Alemania", "Holanda", "Inglaterra", "Inter", "Italia", "Juventus", "Liverpool", "Man United", "Milan", "Bayern Munchen 15", "Real Madrid", "Real Madrid 15", "PSG 15", "Barcelona 15"
+];
+
+export const newMediumTeamsList: string[] = [
+  "Ajax", "Atletico Madrid", "Benfica", "Betis", "Fiorentina", "Lazio", "Lyon", "Man City", "Marseille", "Monaco", "Olympiacos", "Porto", "PSV", "Portugal", "República Checa", "Roma", "Sevilla", "Sporting Lisboa", "Suecia", "Tottenham", "Uruguay", "Valencia", "Villareal"
 ];
 
 export const newWeakTeamsList: string[] = [
-  "Ajax", "Celtic", "Atletico Madrid", "Benfica", "Belgica", "Betis", "Boca", "Villareal", "Chievo Verona", "Comodín B", "Costa de Marfil", "Croacia", "Dinamarca", "Everton", "Fiorentina", "Lazio", "Lyon", "Man City", "Marseille", "Monaco", "Palermo", "Porto", "PSV", "River", "Newcastle", "Sampdoria", "Sevilla", "Tottenham", "Siena", "Sporting Lisboa", "Turquia", "Ucrania", "Udinese", "West Ham", "Zaragoza", "Aston Villa", "Middlebrook", "Charlton", "Fulham", "Tesside", "Valencia", "Saint-Étienne", "Olympiacos", "Irlanda", "Uruguay"
+  "Celtic", "Belgica", "Boca", "Chievo Verona", "Comodín B", "Costa de Marfil", "Croacia", "Dinamarca", "Everton", "Palermo", "River", "Newcastle", "Sampdoria", "Siena", "Turquia", "Ucrania", "Udinese", "West Ham", "Zaragoza", "Aston Villa", "Middlebrook", "Charlton", "Fulham", "Tesside", "Saint-Étienne", "Irlanda"
 ];
 
 export const legacyStrongTeamsList: string[] = [
-  "Argentina", "Arsenal", "Barcelona", "Bayern Munchen", "Brasil", "Chelsea", "Comodín A", "España", "Francia", "Alemania", "Holanda", "Inglaterra", "Inter", "Italia", "Juventus", "Liverpool", "Man United", "Milan", "Newcastle", "Portugal", "Real Madrid", "República Checa", "Roma", "Suecia", "Tottenham", "Valencia", "Villareal"
+  "Argentina", "Arsenal", "Barcelona", "Bayern Munchen", "Brasil", "Chelsea", "Comodín A", "España", "Francia", "Alemania", "Holanda", "Inglaterra", "Inter", "Italia", "Juventus", "Liverpool", "Man United", "Milan", "Newcastle", "Real Madrid", "Valencia"
+];
+
+export const legacyMediumTeamsList: string[] = [
+  "Ajax", "Atletico Madrid", "Benfica", "Lazio", "Lyon", "Man City", "Marseille", "Monaco", "Porto", "PSV", "Portugal", "República Checa", "Roma", "Sevilla", "Suecia", "Tottenham", "Villareal"
 ];
 
 export const legacyWeakTeamsList: string[] = [
-  "Ajax", "Celtic", "Atletico Madrid", "Benfica", "Belgica", "Betis", "Boca", "Camerun", "Chievo Verona", "Comodín B", "Costa de Marfil", "Croacia", "Dinamarca", "Everton", "Fiorentina", "Lazio", "Lyon", "Man City", "Marseille", "Monaco", "Palermo", "Porto", "PSV", "River", "Sampdoria", "Sevilla", "Siena", "Sporting Lisboa", "Turquia", "Ucrania", "Udinese", "West Ham", "Zaragoza", "Aston Villa", "Middlebrook", "Charlton", "Fulham", "Tesside", "Pompy", "Saint-Étienne", "Olympiacos", "Irlanda", "Uruguay"
+  "Celtic", "Betis", "Boca", "Camerun", "Chievo Verona", "Comodín B", "Costa de Marfil", "Croacia", "Dinamarca", "Everton", "Fiorentina", "Palermo", "River", "Sampdoria", "Siena", "Sporting Lisboa", "Turquia", "Ucrania", "Udinese", "West Ham", "Zaragoza", "Aston Villa", "Middlebrook", "Charlton", "Fulham", "Tesside", "Pompy", "Saint-Étienne", "Olympiacos", "Irlanda", "Uruguay"
 ];

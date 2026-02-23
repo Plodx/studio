@@ -10,9 +10,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { GeneratedTeamCard } from '@/components/generated-team-card';
 import { SubmitButton } from '@/components/submit-button';
 import { useToast } from "@/hooks/use-toast";
-import { AlertCircle, Info, Cog, SlidersHorizontal, History, Sparkles, Trophy } from 'lucide-react';
+import { AlertCircle, Info, Cog, SlidersHorizontal, History, Sparkles, Trophy, Scale } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { newStrongTeamsList, newWeakTeamsList, legacyStrongTeamsList, legacyWeakTeamsList } from '@/lib/team-data';
+import { newStrongTeamsList, newWeakTeamsList, legacyStrongTeamsList, legacyWeakTeamsList, newMediumTeamsList, legacyMediumTeamsList } from '@/lib/team-data';
 import { EditableTeamList } from '@/components/editable-team-list';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -31,6 +31,7 @@ const initialState: ActionResult = {
 };
 
 type TeamListVersion = 'new' | 'legacy';
+type GenerationMode = 'balanced' | 'random' | 'balanced-v2';
 
 
 function HomePageContent() {
@@ -40,24 +41,27 @@ function HomePageContent() {
   const { user } = useAuth();
 
 
-  const [generationMode, setGenerationMode] = useState<'balanced' | 'random'>('balanced');
+  const [generationMode, setGenerationMode] = useState<GenerationMode>('balanced');
   const [teamListVersion, setTeamListVersion] = useState<TeamListVersion>('new');
   
   const [currentStrongTeams, setCurrentStrongTeams] = useState<string[]>(newStrongTeamsList);
+  const [currentMediumTeams, setCurrentMediumTeams] = useState<string[]>(newMediumTeamsList);
   const [currentWeakTeams, setCurrentWeakTeams] = useState<string[]>(newWeakTeamsList);
-  const [allTeams, setAllTeams] = useState<string[]>([...new Set([...newStrongTeamsList, ...newWeakTeamsList])]);
+  const [allTeams, setAllTeams] = useState<string[]>([...new Set([...newStrongTeamsList, ...newMediumTeamsList, ...newWeakTeamsList])]);
   
   const [showTeamEditors, setShowTeamEditors] = useState(false);
 
   useEffect(() => {
     if (teamListVersion === 'new') {
       setCurrentStrongTeams(newStrongTeamsList);
+      setCurrentMediumTeams(newMediumTeamsList);
       setCurrentWeakTeams(newWeakTeamsList);
-      setAllTeams([...new Set([...newStrongTeamsList, ...newWeakTeamsList])]);
+      setAllTeams([...new Set([...newStrongTeamsList, ...newMediumTeamsList, ...newWeakTeamsList])]);
     } else {
       setCurrentStrongTeams(legacyStrongTeamsList);
+      setCurrentMediumTeams(legacyMediumTeamsList);
       setCurrentWeakTeams(legacyWeakTeamsList);
-      setAllTeams([...new Set([...legacyStrongTeamsList, ...legacyWeakTeamsList])]);
+      setAllTeams([...new Set([...legacyStrongTeamsList, ...legacyMediumTeamsList, ...legacyWeakTeamsList])]);
     }
   }, [teamListVersion]);
 
@@ -99,11 +103,15 @@ function HomePageContent() {
   const maxTotalGroups = Math.max(0, 
     generationMode === 'balanced' 
       ? Math.min(Math.floor(currentStrongTeams.length / 2), Math.floor(currentWeakTeams.length / 2))
+      : generationMode === 'balanced-v2'
+      ? Math.min(Math.floor(currentStrongTeams.length / 2), currentMediumTeams.length, currentWeakTeams.length)
       : Math.floor(allTeams.length / 4)
   );
   
   const canGenerate = generationMode === 'balanced'
     ? currentStrongTeams.length >= 2 && currentWeakTeams.length >= 2
+    : generationMode === 'balanced-v2'
+    ? currentStrongTeams.length >= 2 && currentMediumTeams.length >= 1 && currentWeakTeams.length >= 1
     : allTeams.length >= 4;
 
 
@@ -145,11 +153,11 @@ function HomePageContent() {
                <CardDescription className="text-muted-foreground">Manage the team pools for generation. Current version: <span className="font-bold capitalize">{teamListVersion}</span></CardDescription>
              </CardHeader>
              <CardContent className="space-y-6">
-                {generationMode === 'balanced' ? (
+                {generationMode === 'balanced' && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <EditableTeamList
                       listId="strongTeams"
-                      title="Strong Teams Editor"
+                      title="Strong Teams"
                       teams={currentStrongTeams}
                       onTeamsChange={setCurrentStrongTeams}
                       inputLabel="New Strong Team"
@@ -159,7 +167,7 @@ function HomePageContent() {
                     />
                     <EditableTeamList
                       listId="weakTeams"
-                      title="Weak Teams Editor"
+                      title="Weak Teams"
                       teams={currentWeakTeams}
                       onTeamsChange={setCurrentWeakTeams}
                       inputLabel="New Weak Team"
@@ -168,11 +176,46 @@ function HomePageContent() {
                       nounPlural="weak teams"
                     />
                   </div>
-                ) : (
+                )}
+                {generationMode === 'balanced-v2' && (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <EditableTeamList
+                      listId="strongTeams"
+                      title="Strong Teams"
+                      teams={currentStrongTeams}
+                      onTeamsChange={setCurrentStrongTeams}
+                      inputLabel="New Strong Team"
+                      addButtonLabel="Add Strong Team"
+                      nounSingular="strong team"
+                      nounPlural="strong teams"
+                    />
+                    <EditableTeamList
+                      listId="mediumTeams"
+                      title="Medium Teams"
+                      teams={currentMediumTeams}
+                      onTeamsChange={setCurrentMediumTeams}
+                      inputLabel="New Medium Team"
+                      addButtonLabel="Add Medium Team"
+                      nounSingular="medium team"
+                      nounPlural="medium teams"
+                    />
+                    <EditableTeamList
+                      listId="weakTeams"
+                      title="Weak Teams"
+                      teams={currentWeakTeams}
+                      onTeamsChange={setCurrentWeakTeams}
+                      inputLabel="New Weak Team"
+                      addButtonLabel="Add Weak Team"
+                      nounSingular="weak team"
+                      nounPlural="weak teams"
+                    />
+                  </div>
+                )}
+                {generationMode === 'random' && (
                   <div>
                     <EditableTeamList
                       listId="allTeams"
-                      title="All Teams Editor"
+                      title="All Teams"
                       teams={allTeams}
                       onTeamsChange={setAllTeams}
                       inputLabel="New Team Name"
@@ -202,15 +245,11 @@ function HomePageContent() {
           </CardHeader>
           <CardContent>
             <form action={formAction} ref={formRef} className="space-y-6">
-              {generationMode === 'balanced' ? (
-                <>
-                  <input type="hidden" name="strongTeamsJSON" value={JSON.stringify(currentStrongTeams)} />
-                  <input type="hidden" name="weakTeamsJSON" value={JSON.stringify(currentWeakTeams)} />
-                </>
-              ) : (
-                <input type="hidden" name="allTeamsJSON" value={JSON.stringify(allTeams)} />
-              )}
-               <input type="hidden" name="generationMode" value={generationMode} />
+              <input type="hidden" name="strongTeamsJSON" value={JSON.stringify(currentStrongTeams)} />
+              <input type="hidden" name="mediumTeamsJSON" value={JSON.stringify(currentMediumTeams)} />
+              <input type="hidden" name="weakTeamsJSON" value={JSON.stringify(currentWeakTeams)} />
+              <input type="hidden" name="allTeamsJSON" value={JSON.stringify(allTeams)} />
+              <input type="hidden" name="generationMode" value={generationMode} />
 
               <div className="space-y-4">
                  <div className="space-y-2">
@@ -245,8 +284,8 @@ function HomePageContent() {
                   <Label className="text-base font-medium text-card-foreground">Generation Mode</Label>
                    <RadioGroup
                       value={generationMode}
-                      onValueChange={(value) => setGenerationMode(value as 'balanced' | 'random')}
-                      className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1"
+                      onValueChange={(value) => setGenerationMode(value as GenerationMode)}
+                      className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1"
                     >
                       <Label htmlFor="mode-balanced" className="flex flex-col items-start gap-3 rounded-md border-2 p-4 hover:border-primary/80 cursor-pointer has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
                         <div className="flex items-center gap-2">
@@ -254,6 +293,13 @@ function HomePageContent() {
                           <span className="font-bold">Balanced</span>
                         </div>
                         <p className="text-sm text-muted-foreground ml-7">Groups of 2 Strong & 2 Weak teams.</p>
+                      </Label>
+                      <Label htmlFor="mode-balanced-v2" className="flex flex-col items-start gap-3 rounded-md border-2 p-4 hover:border-primary/80 cursor-pointer has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
+                        <div className="flex items-center gap-2">
+                          <RadioGroupItem value="balanced-v2" id="mode-balanced-v2" />
+                          <span className="font-bold">Balanced V2</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground ml-7">Groups of 2 Strong, 1 Medium & 1 Weak.</p>
                       </Label>
                        <Label htmlFor="mode-random" className="flex flex-col items-start gap-3 rounded-md border-2 p-4 hover:border-primary/80 cursor-pointer has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
                          <div className="flex items-center gap-2">
