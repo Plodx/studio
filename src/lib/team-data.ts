@@ -22,4 +22,3 @@ export const legacyMediumTeamsList: string[] = [
 export const legacyWeakTeamsList: string[] = [
   "Celtic", "Betis", "Boca", "Camerun", "Chievo Verona", "Comodín B", "Costa de Marfil", "Croacia", "Dinamarca", "Everton", "Fiorentina", "Palermo", "River", "Sampdoria", "Siena", "Sporting Lisboa", "Turquia", "Ucrania", "Udinese", "West Ham", "Zaragoza", "Aston Villa", "Middlebrook", "Charlton", "Fulham", "Tesside", "Pompy", "Saint-Étienne", "Olympiacos", "Irlanda", "Uruguay"
 ];
-
