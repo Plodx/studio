@@ -1,10 +1,10 @@
 
 export const newStrongTeamsList: string[] = [
-  "Argentina", "Arsenal", "Barcelona", "Bayern Munchen", "Brasil", "Chelsea", "Comodín A", "España", "Francia", "Alemania", "Holanda", "Inglaterra", "Inter", "Italia", "Juventus", "Liverpool", "Man United", "Milan", "Bayern Munchen 15", "Real Madrid", "Real Madrid 15", "PSG 15", "Barcelona 15"
+  "Argentina", "Arsenal", "Barcelona", "Bayern Munchen", "Brasil", "Chelsea", "Comodín A", "España", "Francia", "Alemania", "Holanda", "Inglaterra", "Inter", "Italia", "Juventus", "Liverpool", "Man United", "Milan", "Bayern Munchen 15", "Real Madrid", "Real Madrid 15", "PSG 15", "Barcelona 15", "República Checa"
 ];
 
 export const newMediumTeamsList: string[] = [
-  "Ajax", "Atletico Madrid", "Benfica", "Boca", "Celtic", "Comodín B", "Fiorentina", "Irlanda", "Lazio", "Lyon", "Marseille", "Monaco", "Newcastle", "Porto", "PSV", "Portugal", "República Checa", "Roma", "Sevilla", "Sporting Lisboa", "Suecia", "Tottenham", "Ucrania", "Valencia", "Villareal"
+  "Ajax", "Atletico Madrid", "Benfica", "Boca", "Celtic", "Comodín B", "Fiorentina", "Irlanda", "Lazio", "Lyon", "Marseille", "Monaco", "Newcastle", "Porto", "PSV", "Portugal", "Roma", "Sevilla", "Sporting Lisboa", "Suecia", "Tottenham", "Ucrania", "Valencia", "Villareal"
 ];
 
 export const newWeakTeamsList: string[] = [
